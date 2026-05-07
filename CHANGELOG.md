@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-05-07
+
+### Added
+
+- **One-line plugin install for Claude Code.** `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json` ship at the repo root. Users can now install Apex with two commands inside Claude Code: `/plugin marketplace add Apex-Radar/apex` then `/plugin install apex@apex-marketplace`. No clone, no `npm install`, no manual file moves. README updated with this as the recommended Option A.
+- **Positional URL support on `apex visibility` and `apex audit`.** Type `apex visibility example.com` instead of `apex visibility --url https://example.com`. The `--url` flag still works for scripts.
+- **Bare-domain auto-prefix.** If you type a URL without a protocol (`apex visibility example.com`), Apex auto-prepends `https://` instead of erroring.
+
+### Fixed
+
+- **`SKILL.md` filename casing.** Renamed `skill.md` → `SKILL.md` to match Claude Code's native skill auto-discovery convention. Manual filesystem installs (`git clone … ~/.claude/skills/apex`) now load the skill on first launch instead of silently failing on case-sensitive filesystems.
+
 ## [0.1.3] — 2026-05-07
 
 ### Changed

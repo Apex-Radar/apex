@@ -1,6 +1,6 @@
 {
   "name": "@apexradar/apex",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "The AEO operating system for Claude Code. AAIV first. Citations follow.",
   "license": "MIT",
   "type": "module",
@@ -30,7 +30,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "skill.md",
+    "SKILL.md",
     "commands",
     "MANIFESTO.md",
     "ATTRIBUTIONS.md",

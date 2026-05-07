@@ -1,4 +1,4 @@
-import { parseFlags } from "./_flags.js";
+import { parseFlags, resolveUrl } from "./_flags.js";
 import { renderScoreCard } from "../core/render/score-card.js";
 import { runLocalAudit } from "../local-audit/index.js";
 import { fetchLatestAudit } from "../radar/audit-client.js";
@@ -23,7 +23,7 @@ export async function visibility(flags: VisibilityFlags): Promise<string> {
   } else {
     if (!flags.url) {
       throw new Error(
-        "Local audit needs --url <https://...>.  (Or set a Radar workspace token to use the hosted audit.)",
+        "Local audit needs a URL. Try: apex visibility example.com  (or --url https://example.com).  Or set a Radar workspace token to use the hosted audit.",
       );
     }
     result = await runLocalAudit({ url: flags.url });
@@ -38,14 +38,17 @@ export async function run(argv: string[]): Promise<number> {
   if (f.help) {
     console.log(
       "apex visibility — show AAIV + AEO posture\n" +
-      "  --url <url>    target URL for local audit (no Radar token required)\n" +
-      "  --local        force local audit even if a Radar token is set\n" +
-      "  --json         machine-readable output",
+      "  apex visibility <url>    target URL for local audit (positional, no flag needed)\n" +
+      "  --url <url>              same, via flag\n" +
+      "  --local                  force local audit even if a Radar token is set\n" +
+      "  --json                   machine-readable output\n" +
+      "\n" +
+      "Bare domains work too: apex visibility example.com (https:// auto-prepended).",
     );
     return 0;
   }
   const out = await visibility({
-    url: f.options.url as string | undefined,
+    url: resolveUrl(f),
     json: f.json,
     local: Boolean(f.options.local),
     workspace: f.options.workspace as string | undefined,

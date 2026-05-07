@@ -1,0 +1,21 @@
+{
+  "$schema": "https://code.claude.com/docs/plugins/plugin-schema.json",
+  "name": "apex",
+  "description": "AEO toolkit for Claude Code. Score a site on SEO + AEO + AAIV, rank what to fix first, and apply safe code patches.",
+  "version": "0.1.4",
+  "author": {
+    "name": "Apex Radar",
+    "url": "https://getapexradar.com"
+  },
+  "homepage": "https://getapexradar.com",
+  "repository": "https://github.com/Apex-Radar/apex",
+  "license": "MIT",
+  "keywords": [
+    "aeo",
+    "seo",
+    "answer-engine-optimization",
+    "ai-search",
+    "schema-org",
+    "audit"
+  ]
+}

@@ -28,7 +28,18 @@ Everything runs locally on your machine. No account. No backend. No data leaves.
 
 ## Install in 60 seconds
 
-### Option A — Claude Code
+### Option A — Claude Code (one-line plugin install, recommended)
+
+Inside Claude Code:
+
+```
+/plugin marketplace add Apex-Radar/apex
+/plugin install apex@apex-marketplace
+```
+
+That's it. The slash commands appear immediately — no clone, no build, no restart.
+
+### Option B — Claude Code (manual clone, for hacking on it)
 
 ```bash
 git clone https://github.com/Apex-Radar/apex.git ~/.claude/skills/apex
@@ -52,7 +63,7 @@ Restart Claude Code. The slash commands appear automatically:
 - `/apex-keys` — manage BYOK API keys
 - `/apex-costs` — inspect local BYOK cost ledger
 
-### Option B — Claude Desktop
+### Option C — Claude Desktop
 
 ```bash
 git clone https://github.com/Apex-Radar/apex.git \
@@ -64,7 +75,7 @@ npm run build
 
 Restart Claude Desktop. Same commands as above.
 
-### Option C — standalone CLI (no Claude required)
+### Option D — standalone CLI (no Claude required)
 
 ```bash
 npm install -g @apexradar/apex

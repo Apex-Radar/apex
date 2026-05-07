@@ -52,3 +52,20 @@ export async function requireToken(keysMod: { get(p: any): Promise<string | null
 }
 
 export const RADAR_BASE = process.env.APEX_RADAR_BASE_URL || "https://app.getapexradar.com";
+
+/**
+ * Resolve a target URL from either `--url <value>` or the first positional arg,
+ * and auto-prepend `https://` when the user typed a bare domain.
+ *
+ * Friendliness: `apex visibility example.com` should Just Work.
+ */
+export function resolveUrl(f: ParsedFlags): string | undefined {
+  const raw =
+    (f.options.url as string | undefined) ??
+    f.positional.find((p) => !p.startsWith("-"));
+  if (!raw) return undefined;
+  // Already a full URL?
+  if (/^https?:\/\//i.test(raw)) return raw;
+  // Bare domain — prepend https. Strip leading slashes if any.
+  return `https://${raw.replace(/^\/+/, "")}`;
+}
