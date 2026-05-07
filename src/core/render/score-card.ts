@@ -58,12 +58,15 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push(`${DIM}${audit.url} · ${when} · ${src}${RESET}`);
   lines.push("");
 
-  // Score line
-  lines.push(
+  // Score line — front-and-center: Overall · SEO · AEO · AAIV (when available)
+  let scoreLine =
     `Overall  ${band(audit.overallScore)}${audit.overallScore}/100${RESET}` +
-      `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
-      `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`,
-  );
+    `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
+    `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`;
+  if (audit.readiness) {
+    scoreLine += `    AAIV ${band(audit.readiness.score)}${audit.readiness.score}/100${RESET}`;
+  }
+  lines.push(scoreLine);
 
   // AAIV section
   if (audit.readiness) {

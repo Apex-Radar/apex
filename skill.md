@@ -61,11 +61,13 @@ Each `/apex-*` slash command has its own file in `commands/<name>.md` describing
 
 ### "Audit my site" / "How's my AEO?"
 
-Run `/apex-visibility`. Render the scorecard. Then summarize in plain English:
+Run `/apex-visibility`. Render the scorecard. Then summarize in plain English. **The first line of your summary MUST restate the headline numbers** — users in chat UIs often have the tool-output collapsed and only see your prose. Use this shape:
 
-> Your AAIV is X. The fastest move: [single top fix]. After that, [#2 and #3]. AEO compounds after.
+> **SEO X · AEO Y · AAIV Z** — The fastest move: [single top fix]. After that, [#2 and #3]. AEO compounds after.
 
-Never read out every check. Three bullets max. Always name the #1 fix in the first sentence.
+If AAIV isn't present in the data (some Radar-mode results omit `readiness`), drop it from the line and just give SEO + AEO. Never lead with just AAIV — it buries the two axis scores users came for.
+
+Never read out every check. Three bullets max. Always name the #1 fix in the first sentence after the headline numbers.
 
 ### "What should I fix?"
 

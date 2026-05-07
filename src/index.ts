@@ -47,4 +47,8 @@ export type { BriefSpec } from "./workflow/answer-gap.js";
 export { compareScans, renderProve } from "./workflow/prove.js";
 export type { ProveDelta } from "./workflow/prove.js";
 
-export const APEX_VERSION = "0.1.0";
+// Injected at build time by tsup's `define` from package.json. See tsup.config.ts.
+// Falls back to "0.0.0-dev" when running un-built (e.g. tsx / vitest dev mode).
+declare const __APEX_VERSION__: string;
+export const APEX_VERSION: string =
+  typeof __APEX_VERSION__ !== "undefined" ? __APEX_VERSION__ : "0.0.0-dev";

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-05-07
+
+### Changed
+
+- **AAIV is now front-and-center on the score line.** `apex visibility` top line now reads `Overall X/100 · SEO Y · AEO Z · AAIV W/100` — AAIV pulled up beside AEO instead of being buried in the third detail line. The "AAIV — Apex AI Visibility" detail block (`Are you understood? / Are you cited?`) is preserved underneath as the breakdown. AAIV is the brand metric; it deserves the headline.
+- **Skill summary template** rewritten so `/apex-visibility` chat summaries always lead with all three numbers — `**SEO X · AEO Y · AAIV Z** — The fastest move…` — instead of just AAIV. Closes a UX gap where users in chat clients with collapsed tool-output blocks couldn't see the SEO/AEO scores at all (they're in the rendered scorecard, but the prose summary skipped them).
+
+### Fixed
+
+- **`apex --version` now prints the real version.** Previously hardcoded as `"0.1.0"` in `src/index.ts` and never bumped — it was silently stale through 0.1.1 and 0.1.2 even though both releases shipped. Version is now read from `package.json` at build time via `tsup`'s `define` option, eliminating the recurrence class.
+
 ## [0.1.2] — 2026-05-07
 
 ### Fixed
