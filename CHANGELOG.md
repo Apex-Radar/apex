@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-07
+
+### Added
+
+- **Comprehensive scorecard output.** `apex visibility` now shows ALL failing checks AND all warnings (not just the top 5 fails), grouped by category (AEO before SEO), ranked by impact, with each check's title + message + impact rendered. Counts summary line ("77 checks · ✓ 60 pass · ⚠ 16 warn · ✗ 1 fail") added under the score block. Free CLI is now a complete diagnosis tool, not just a score.
+- **Radar upsell footer in local mode** — output ends with a one-line note about setting `APEX_RADAR_PORTAL_TOKEN` for continuous monitoring + AI citation probes. Free tier = full diagnosis, paid tier = the extra extra.
+- **`--json` hint in default output** — power users immediately discoverable.
+
+### Fixed
+
+- `package.json` `bin[apex]` script path was `"./dist/cli.js"` (npm corrected it during publish but emitted a warning). Now `"dist/cli.js"` — matches npm's expected format.
+
 ## [0.1.0] — 2026-05-07
 
 ### Added
@@ -35,5 +47,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Apex is MIT-licensed. Forks and derivative skills are encouraged.
 - See `ATTRIBUTIONS.md` for credit to upstream OSS that informed Apex's design.
 
-[Unreleased]: https://github.com/Apex-Radar/apex/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Apex-Radar/apex/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Apex-Radar/apex/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Apex-Radar/apex/releases/tag/v0.1.0

@@ -1,7 +1,11 @@
 // Pretty terminal renderer for AAIV + AEO posture. No deps.
 // Reads the unified AuditResult shape (source: "radar" | "local").
+//
+// v0.1.1 — comprehensive output: shows all failures + warnings grouped by
+// category, with counts and Radar upsell. Free CLI = full diagnosis,
+// Radar mode = continuous monitoring + AI citation probes.
 
-import type { AuditResult, AuditWrapper, AivResult } from "../../radar/types.js";
+import type { AuditCheck, AuditResult, AuditWrapper, AivResult } from "../../radar/types.js";
 
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
@@ -14,6 +18,30 @@ function band(n: number): string {
   if (n >= 80) return GREEN;
   if (n >= 60) return YELLOW;
   return RED;
+}
+
+function statusGlyph(status: string): string {
+  if (status === "pass") return `${GREEN}✓${RESET}`;
+  if (status === "warn") return `${YELLOW}⚠${RESET}`;
+  return `${RED}✗${RESET}`;
+}
+
+function bucketByCategory(checks: AuditCheck[], status: "fail" | "warn"): { aeo: AuditCheck[]; seo: AuditCheck[] } {
+  const filtered = checks
+    .filter((c) => c.status === status)
+    .sort((a, b) => (b.impact ?? 0) - (a.impact ?? 0));
+  return {
+    aeo: filtered.filter((c) => c.category === "AEO"),
+    seo: filtered.filter((c) => c.category === "SEO"),
+  };
+}
+
+function renderCheckBlock(checks: AuditCheck[], glyph: string): string[] {
+  return checks.map((c) => {
+    const impact = c.impact !== undefined ? ` ${DIM}(impact ${c.impact})${RESET}` : "";
+    const title = `${BOLD}${c.title}${RESET}`;
+    return `  ${glyph} [${c.category}] ${title}${impact}\n      ${DIM}${c.message}${RESET}`;
+  });
 }
 
 /**
@@ -30,18 +58,20 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push(`${DIM}${audit.url} · ${when} · ${src}${RESET}`);
   lines.push("");
 
+  // Score line
   lines.push(
     `Overall  ${band(audit.overallScore)}${audit.overallScore}/100${RESET}` +
-    `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
-    `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`,
+      `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
+      `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`,
   );
 
+  // AAIV section
   if (audit.readiness) {
     lines.push("");
     lines.push(`${BOLD}AAIV — Apex AI Visibility${RESET}`);
     lines.push(
       `  Are you understood? ${band(audit.readiness.score)}${audit.readiness.score}/100${RESET}` +
-      `  ${DIM}${audit.readiness.label}${RESET}`,
+        `  ${DIM}${audit.readiness.label}${RESET}`,
     );
     if (audit.citation) {
       if (audit.citation.state === "graded" && audit.citation.score !== null) {
@@ -60,27 +90,57 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
     lines.push(`${DIM}${audit.domainAgeContext}${RESET}`);
   }
 
-  // Top failing checks by impact (descending numeric impact, AEO before SEO).
-  const fails = audit.checks
-    .filter((c) => c.status === "fail")
-    .sort((a, b) => {
-      const cat = (a.category === "AEO" ? 0 : 1) - (b.category === "AEO" ? 0 : 1);
-      if (cat !== 0) return cat;
-      return (b.impact ?? 0) - (a.impact ?? 0);
-    })
-    .slice(0, 5);
+  // Counts summary
+  const total = audit.checks.length;
+  const passes = audit.checks.filter((c) => c.status === "pass").length;
+  const warns = audit.checks.filter((c) => c.status === "warn").length;
+  const fails = audit.checks.filter((c) => c.status === "fail").length;
+  lines.push("");
+  lines.push(
+    `${BOLD}${total} checks${RESET}  ` +
+      `${GREEN}✓ ${passes} pass${RESET}  ` +
+      `${YELLOW}⚠ ${warns} warn${RESET}  ` +
+      `${RED}✗ ${fails} fail${RESET}`,
+  );
 
-  if (fails.length) {
+  // Failing checks — grouped by category, AEO first
+  const failures = bucketByCategory(audit.checks, "fail");
+  if (failures.aeo.length > 0 || failures.seo.length > 0) {
     lines.push("");
-    lines.push(`${BOLD}Top fixes${RESET}`);
-    for (const c of fails) {
-      const tag = c.impact !== undefined ? ` ${DIM}(impact ${c.impact})${RESET}` : "";
-      lines.push(`  ${RED}•${RESET} [${c.category}] ${c.title}${tag} — ${c.message}`);
+    lines.push(`${BOLD}${RED}Failing — fix these first${RESET}`);
+    if (failures.aeo.length > 0) {
+      lines.push(...renderCheckBlock(failures.aeo, statusGlyph("fail")));
+    }
+    if (failures.seo.length > 0) {
+      lines.push(...renderCheckBlock(failures.seo, statusGlyph("fail")));
     }
   }
 
+  // Warnings — grouped by category, AEO first
+  const warnings = bucketByCategory(audit.checks, "warn");
+  if (warnings.aeo.length > 0 || warnings.seo.length > 0) {
+    lines.push("");
+    lines.push(`${BOLD}${YELLOW}Worth fixing — opportunities${RESET}`);
+    if (warnings.aeo.length > 0) {
+      lines.push(...renderCheckBlock(warnings.aeo, statusGlyph("warn")));
+    }
+    if (warnings.seo.length > 0) {
+      lines.push(...renderCheckBlock(warnings.seo, statusGlyph("warn")));
+    }
+  }
+
+  // Closing line + Radar upsell
   lines.push("");
   lines.push(`${DIM}Move AAIV first. AEO compounds after.${RESET}`);
+  if (audit.source === "local") {
+    lines.push(
+      `${DIM}For continuous monitoring + AI citation probes (ChatGPT, Claude, Perplexity), set ${RESET}` +
+        `${BOLD}APEX_RADAR_PORTAL_TOKEN${RESET}${DIM} or run ${RESET}${BOLD}apex keys set radar_portal <token>${RESET}${DIM}.${RESET}`,
+    );
+    lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
+  } else {
+    lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
+  }
   return lines.join("\n");
 }
 
