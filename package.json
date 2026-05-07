@@ -1,0 +1,71 @@
+{
+  "name": "@apexradar/apex",
+  "version": "0.1.0",
+  "description": "The AEO operating system for Claude Code. AAIV first. Citations follow.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://getapexradar.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apex-Radar/apex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Apex-Radar/apex/issues"
+  },
+  "keywords": [
+    "aeo",
+    "answer-engine-optimization",
+    "ai-search",
+    "claude-code",
+    "claude-skill",
+    "llms-txt",
+    "schema-org",
+    "apex-radar",
+    "aaiv"
+  ],
+  "bin": {
+    "apex": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "skill.md",
+    "commands",
+    "MANIFESTO.md",
+    "ATTRIBUTIONS.md",
+    "delta-table.json"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "diff": "^5.2.0",
+    "fast-glob": "^3.3.2",
+    "keytar": "^7.9.0",
+    "kleur": "^4.1.5",
+    "undici": "^6.19.8",
+    "yargs": "^17.7.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.2.1",
+    "@types/node": "^20.12.7",
+    "@types/yargs": "^17.0.32",
+    "tsup": "^8.0.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

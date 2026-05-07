@@ -1,0 +1,36 @@
+{
+  "$schema": "https://getapexradar.com/schemas/delta-table.v1.json",
+  "version": "0.1.0",
+  "scoringFormula": "(passes + warns * 0.5) / total * 100",
+  "readiness": {
+    "factorWeight": 7.7,
+    "fail_to_pass": {
+      "high":   { "min": 6, "max": 8 },
+      "medium": { "min": 3, "max": 5 },
+      "low":    { "min": 1, "max": 2 }
+    },
+    "warn_to_pass": {
+      "high":   { "min": 3, "max": 4 },
+      "medium": { "min": 1.5, "max": 2.5 },
+      "low":    { "min": 0.5, "max": 1 }
+    }
+  },
+  "citation": {
+    "factorWeight": 7.7,
+    "displayPolicy": "graded_only",
+    "fail_to_pass": {
+      "high":   { "min": 6, "max": 8 },
+      "medium": { "min": 3, "max": 5 },
+      "low":    { "min": 1, "max": 2 }
+    },
+    "pendingMessage": "Citation deltas are locked until your domain crosses the 90-day promotion threshold. Read AAIV readiness instead — that's where to focus."
+  },
+  "seo_aeo_composite": {
+    "displayPolicy": "confidence_band",
+    "bands": {
+      "mechanical":  "Without this, the page cannot be cited.",
+      "correlated":  "Strongly observed to precede citation lift.",
+      "theoretical": "Best practice. Lift unmeasured."
+    }
+  }
+}

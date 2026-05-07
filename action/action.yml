@@ -1,0 +1,31 @@
+name: "Apex AI Visibility"
+description: "Run Apex on every push/PR. Surfaces AAIV score and top fixes; fails the job below a threshold."
+author: "Apex Radar"
+branding:
+  icon: "radio"
+  color: "purple"
+
+inputs:
+  radar-portal-token:
+    description: "Apex Radar portal token. Required to read AIV/Audit results."
+    required: true
+  min-aaiv:
+    description: "Fail the job if AAIV score drops below this value (0-100). Default: 0 (never fail)."
+    required: false
+    default: "0"
+  fail-on-regression:
+    description: "If 'true', fail the job when prove detects lost cited engines. Default: false."
+    required: false
+    default: "false"
+
+outputs:
+  aaiv-score:
+    description: "Latest AAIV score (0-100)."
+  aeo-score:
+    description: "Latest AEO composite score (0-100)."
+  top-fixes:
+    description: "JSON array of top fixable failing checks."
+
+runs:
+  using: "node20"
+  main: "dist/action.js"
