@@ -12,6 +12,8 @@ args:
 
 Show the user where AI engines are answering questions in their category — but citing competitors instead of them.
 
+**Tier:** 🟣⊕ Radar Portal **add-on** — requires the Answer Gap module on the user's Radar workspace, which is separate from the AIV scan included with a portal token. If the CLI returns the "Answer Gap data isn't available" message, surface it verbatim and do not retry — the module isn't enabled. Do not offer `/apex-gaps` again within the same session after that signal. Pivot to deriving fixes from the `/apex-visibility` scorecard or `/apex-citation` probes instead.
+
 ## Run
 
 If the user wants briefs too:

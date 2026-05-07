@@ -36,20 +36,24 @@ Apex has two ways to gather data. Pick automatically based on what's available:
 
 All slash commands are individual files in `commands/`. The CLI is invoked via `apex <subcommand>`.
 
-| Command | Purpose | CLI invocation |
-|---------|---------|----------------|
-| `/apex` | Entry point — shows status, available subcommands | `apex --version` + `apex keys list` |
-| `/apex-connect` | Set up the Radar portal token + BYOK provider keys | `apex keys set radar_portal <token>` |
-| `/apex-audit` | Kick off a fresh Radar AEO scan | `apex audit` |
-| `/apex-visibility` | Full SEO + AEO scorecard (AAIV + AEO posture) | `apex visibility` |
-| `/apex-gaps` | Top 5 highest-impact fixes, ranked | `apex gaps` |
-| `/apex-fix` | Apply a fixer — `ai-crawler-access`, `faq-schema`, or `organization-schema`. Always dry-run first. | `apex fix <fixer-id> [--dry-run]` |
-| `/apex-prove` | Re-run after a fix; show score delta | `apex prove [url]` |
-| `/apex-citation` | BYOK ad-hoc citation probe against ChatGPT / Perplexity / etc. | `apex citation <query>` |
-| `/apex-trends` | Show AI visibility trend over time | `apex trends` |
-| `/apex-defend` | Detect regressions across recent AIV scans | `apex defend` |
-| `/apex-keys` | Manage BYOK API keys (Anthropic, OpenAI, Perplexity, Google, Radar) | `apex keys ...` |
-| `/apex-costs` | Inspect local BYOK cost ledger (`~/.apex/ledger.jsonl`) | `apex costs` |
+**Tier legend:** 🟢 free local · 🔑 BYOK (your LLM key) · 🟣 Radar Portal · 🟣⊕ Radar Portal **add-on** (e.g. Answer Gap module — not auto-included with the portal token).
+
+| Command | Tier | Purpose | CLI invocation |
+|---------|------|---------|----------------|
+| `/apex` | 🟢 | Entry point — shows status, available subcommands | `apex --version` + `apex keys list` |
+| `/apex-connect` | 🟢 | Set up the Radar portal token + BYOK provider keys | `apex keys set radar_portal <token>` |
+| `/apex-audit` | 🟣 | Kick off a fresh Radar AEO scan | `apex audit` |
+| `/apex-visibility` | 🟢 / 🟣 | SEO + AEO scorecard. Local in free mode; 110-check + live citation probes in Radar mode. | `apex visibility` |
+| `/apex-gaps` | 🟣⊕ | Ranked Answer Gap rows. **Requires the Answer Gap module on the Radar workspace** — returns 404 if not enabled. Don't offer this command unless you've confirmed it works for the user. | `apex gaps` |
+| `/apex-fix` | 🟢 | Apply a fixer — `ai-crawler-access`, `faq-schema`, or `organization-schema`. Always dry-run first. | `apex fix <fixer-id> [--dry-run]` |
+| `/apex-prove` | 🟢 / 🟣 | Re-run after a fix; show score delta. Mode follows visibility. | `apex prove [url]` |
+| `/apex-citation` | 🔑 | BYOK ad-hoc citation probe against ChatGPT / Perplexity / Claude / Gemini. | `apex citation <query>` |
+| `/apex-trends` | 🟣 | AI visibility trend over time (Radar-stored history). | `apex trends` |
+| `/apex-defend` | 🟣 | Detect regressions across recent AIV scans. | `apex defend` |
+| `/apex-keys` | 🟢 | Manage BYOK API keys (Anthropic, OpenAI, Perplexity, Google, Radar). | `apex keys ...` |
+| `/apex-costs` | 🟢 | Inspect local BYOK cost ledger (`~/.apex/ledger.jsonl`). | `apex costs` |
+
+**Capability awareness (NON-NEGOTIABLE):** Before offering a command as a next step, check its tier against what the user has configured. Don't suggest 🟣 / 🟣⊕ commands to users who haven't set a Radar token. Don't suggest 🟣⊕ commands without confirming the add-on module is active on their workspace (the only way to confirm Answer Gap is to run it; if it 404s, treat the module as unavailable and don't offer it again that session). Don't suggest 🔑 commands without checking `apex keys list` for the relevant provider. **A free OSS skill that hands users a 404 burns trust harder than not offering the command at all.**
 
 Each `/apex-*` slash command has its own file in `commands/<name>.md` describing how Claude should run it.
 
@@ -65,7 +69,9 @@ Never read out every check. Three bullets max. Always name the #1 fix in the fir
 
 ### "What should I fix?"
 
-Run `/apex-gaps`. List the top 5 ranked by impact. For each, give a one-sentence "why it matters" — not generic SEO advice; the actual answer-engine reason (e.g., "FAQ schema lets Perplexity quote your answer verbatim, which is how citation actually works").
+**First**, derive the answer from the visibility scan you already ran — the failing checks in the scorecard ARE the ranked fix list (the renderer puts highest-impact AEO fails first). Summarize the top 5 fails in plain English with one-sentence "why it matters" reasoning per item — not generic SEO advice, the actual answer-engine reason (e.g., "FAQ schema lets Perplexity quote your answer verbatim, which is how citation actually works").
+
+**Only run `/apex-gaps` if** the user has the Radar Answer Gap module on their workspace. If you don't know, don't offer it — derive the fix list from the visibility scan instead. If a previous `/apex-gaps` call in this session returned the "not enabled" message, do not retry within the session.
 
 ### "Did the fix work?"
 

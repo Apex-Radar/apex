@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-05-07
+
+### Fixed
+
+- **`apex gaps` no longer leaks raw HTTP errors.** When the Answer Gap module isn't enabled on a Radar workspace, the command now returns a human-readable message ("Answer Gap data isn't available on this Radar workspace") with free alternatives and an upgrade link, instead of the developer-grade `AIV GET /answer-gap 404`. Also handles the case where the Radar proxy serves marketing-site HTML on missing routes (DOCTYPE / JSON-parse failures treated as the same condition).
+- **`apex visibility` Radar-mode footer** no longer blindly points users at `apex gaps`. The closing line now explicitly calls out that ranked Answer Gap rows require the Radar Answer Gap **add-on module** (separate from the AIV scan) and points users at `apex fix --dry-run` as the universally-available next step.
+- **`apex visibility` local-mode footer** now surfaces `apex citation "<query>"` (BYOK, free) as the path to grade "Are you cited?" alongside the existing Radar Portal upsell. Local mode never had a free citation-grading path before; this makes it discoverable.
+
+### Changed
+
+- **Capability tiers in `skill.md`.** The slash-command table now carries a tier column — 🟢 free local · 🔑 BYOK · 🟣 Radar Portal · 🟣⊕ Radar Portal add-on — and a NON-NEGOTIABLE rule that Claude must check tier vs configured capabilities BEFORE offering a command as a next step. Stops the skill from confidently offering Radar-only commands to free OSS users (the bug this release fixes).
+- **"What should I fix?" guidance rewritten** to derive the fix list from the `apex visibility` scorecard (which is universally available) rather than calling `/apex-gaps` (which requires the add-on).
+- **`commands/apex-gaps.md`** flags the 🟣⊕ add-on tier explicitly and adds a "don't retry within session after a not-enabled signal" rule.
+
 ## [0.1.1] — 2026-05-07
 
 ### Added

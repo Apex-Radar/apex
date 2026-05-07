@@ -134,13 +134,17 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push(`${DIM}Move AAIV first. AEO compounds after.${RESET}`);
   if (audit.source === "local") {
     lines.push(
-      `${DIM}For continuous monitoring + AI citation probes (ChatGPT, Claude, Perplexity), set ${RESET}` +
-        `${BOLD}APEX_RADAR_PORTAL_TOKEN${RESET}${DIM} or run ${RESET}${BOLD}apex keys set radar_portal <token>${RESET}${DIM}.${RESET}`,
+      `${DIM}Local mode: AI citation grading isn't probed. To grade "Are you cited?", either set ${RESET}` +
+        `${BOLD}APEX_RADAR_PORTAL_TOKEN${RESET}${DIM} (Radar Portal — paid) or run ${RESET}` +
+        `${BOLD}apex citation "<query>"${RESET}${DIM} with your own LLM key (BYOK, free).${RESET}`,
     );
-    lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
   } else {
-    lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
+    lines.push(
+      `${DIM}Next: ${RESET}${BOLD}apex fix <fixer-id> --dry-run${RESET}${DIM} to start closing the top fails. ${RESET}` +
+        `${DIM}Ranked Answer Gap rows (${RESET}${BOLD}apex gaps${RESET}${DIM}) require the Radar Answer Gap module — separate from AIV scans.${RESET}`,
+    );
   }
+  lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
   return lines.join("\n");
 }
 
