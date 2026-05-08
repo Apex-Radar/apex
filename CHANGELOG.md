@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-05-08
+
+### Fixed
+
+- **`apex visibility <url>` now scans the URL you typed, regardless of Radar token.** Before this release, a configured Radar token silently overrode any URL passed and dumped the workspace's last cached scan instead. Now: if you pass a URL (positional or `--url`), Apex always runs a local audit on that URL — so you can scan competitors, prospects, or any site without having to clear your token. When a Radar token IS set and we go local because of a passed URL, we add a one-line note so you know your token isn't ignored, just bypassed for this scan.
+- **`apex visibility --local <url>` works as the natural reading.** The flag parser was greedily consuming the URL as the `--local` flag's value. Boolean flags (`--local`, `--dry-run`, `--force`, `--verbose`, `--quiet`) now never consume the next arg.
+- **Friendlier error when a URL is missing.** Lists three valid invocations and explains what running `apex visibility` with no URL does when a Radar token IS configured (fetches workspace latest).
+
+### Changed
+
+- **AEO score line drops the `/Y portable` framing in favor of `/100` baseline with cap-in-parens.** The previous `AEO 60/75 portable` framing accidentally oversold for uncited sites — a user reading "60/75" perceived 80% completeness while their real /100 was 60%. The new `AEO 60/100 (cap 75, citation gated)` puts the /100 reality first and shows the cap as a constraint, not a parallel scale. Free-mode and Radar-mode scores now compare apples-to-apples.
+- **Free-mode footer reframed to lead with BYOK** (the path that actually works for new users) and demote Radar to a sign-up tease. Old text told users to "set a Radar token via `apex connect`" — but there's no self-serve way to generate a token without a workspace. New text: "To grade those, run `apex keys set openai|anthropic|perplexity` (use your own AI key, free). For continuous monitoring across all 113 checks, sign up at https://getapexradar.com."
+- **`/apex-connect` skill walkthrough** now has an explicit "no account → skip this step" branch instead of asking new users to go find a token that doesn't exist for them yet.
+- **Skill summary template** (`commands/apex-visibility.md`) updated so wrapper agents reading the new guidance always surface the cap, the reason, and the unlock path when summarizing capped-mode results. Closes the gap where chat clients dropped the explanation when paraphrasing.
+
 ## [0.1.5] — 2026-05-08
 
 ### Fixed

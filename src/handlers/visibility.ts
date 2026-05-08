@@ -33,7 +33,18 @@ export interface VisibilityFlags {
 
 export async function visibility(flags: VisibilityFlags): Promise<string> {
   const token = flags.workspace ?? (await getRadarPortalToken());
-  const useRadar = !flags.local && Boolean(token);
+
+  // Routing rule (v0.1.6+):
+  //   • URL passed (positional or --url) → ALWAYS run local audit on that URL.
+  //     Without this, a configured Radar token silently overrides the URL and
+  //     dumps the workspace's last cached scan instead of scanning what the
+  //     user typed. People should be able to scan as many URLs as they want.
+  //   • No URL + Radar token → fetch the workspace's latest audit (Radar mode).
+  //   • No URL + no token → friendly error with usage hint.
+  //   • --local explicit → force local audit even if a token is set (this
+  //     case still requires a URL — error out otherwise).
+  const userPassedUrl = Boolean(flags.url);
+  const useRadar = !flags.local && !userPassedUrl && Boolean(token);
 
   let result: AuditResult;
   if (useRadar) {
@@ -42,14 +53,24 @@ export async function visibility(flags: VisibilityFlags): Promise<string> {
   } else {
     if (!flags.url) {
       throw new Error(
-        "Local audit needs a URL. Try: apex visibility example.com  (or --url https://example.com).  Or set a Radar workspace token to use the hosted audit.",
+        "apex visibility needs a URL.\n" +
+        "  apex visibility example.com\n" +
+        "  apex visibility example.com --local\n" +
+        "  apex visibility --url https://example.com\n" +
+        "If you have a Radar workspace token configured, running `apex visibility` with NO URL fetches your workspace's latest audit.",
       );
     }
     result = await runLocalAudit({ url: flags.url });
   }
 
   if (flags.json) return JSON.stringify(result, null, 2);
-  return renderScoreCard(result);
+  let out = renderScoreCard(result);
+  // Heads-up when a Radar token IS configured but we went local because the
+  // user passed a URL. Avoids the user thinking their token isn't working.
+  if (token && !flags.local && userPassedUrl) {
+    out += "\n\n\x1b[2mNote: scanning " + flags.url + " in local mode (capped scoring). To grade this URL with full Radar coverage, scan it from app.getapexradar.com.\x1b[0m";
+  }
+  return out;
 }
 
 export async function run(argv: string[]): Promise<number> {

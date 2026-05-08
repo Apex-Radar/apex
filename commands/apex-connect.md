@@ -5,11 +5,16 @@ description: Connect Apex to the user's Radar portal and BYOK providers.
 
 Walk the user through one-time setup.
 
-## Step 1 — Radar portal token (optional but unlocks AIV / Audit / Prove / Trends / Defend)
+## Step 1 — Radar portal token (optional, only if you already have a Radar account)
 
 Ask the user:
 
-> Do you have an Apex Radar account at https://app.getapexradar.com? If yes, paste your **portal token** here (it's the token that appears in your portal URL after `/api/portal/`). If not, you can use Apex without it — just the local fixers, BYOK probes, and asset generators.
+> Do you already have an Apex Radar account at https://app.getapexradar.com?
+>
+> - **Yes** → paste your portal token (the segment that appears in your portal URL after `/api/portal/`).
+> - **No** → skip this step. The free CLI works without it. If you want continuous monitoring + live AI citation grading later, sign up at https://getapexradar.com.
+
+There's currently no self-serve way to generate a Radar token from outside the portal — it's tied to your workspace provisioning. Don't tell the user to "go generate one" if they don't already have an account; skip to Step 2 and let BYOK (your own LLM keys) do the unlocking.
 
 If they paste a token, store it:
 

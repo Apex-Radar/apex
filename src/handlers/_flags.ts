@@ -7,6 +7,22 @@ export interface ParsedFlags {
   options: Record<string, string | boolean>;
 }
 
+/**
+ * Boolean flags that never consume the next argv as a value. Without this
+ * list the parser greedily reads the next non-`--` token as the flag's
+ * value, which breaks intuitive invocations like `apex visibility --local
+ * cloudflare.com` — the URL would be eaten as the value of `--local`.
+ *
+ * Add a flag here whenever it's a pure boolean toggle.
+ */
+const BOOLEAN_FLAGS = new Set([
+  "local",
+  "dry-run",
+  "force",
+  "verbose",
+  "quiet",
+]);
+
 export function parseFlags(argv: string[]): ParsedFlags {
   const out: ParsedFlags = { json: false, help: false, positional: [], options: {} };
   for (let i = 0; i < argv.length; i++) {
@@ -17,14 +33,19 @@ export function parseFlags(argv: string[]): ParsedFlags {
       const eq = a.indexOf("=");
       if (eq >= 0) {
         out.options[a.slice(2, eq)] = a.slice(eq + 1);
+        continue;
+      }
+      const name = a.slice(2);
+      if (BOOLEAN_FLAGS.has(name)) {
+        out.options[name] = true;
+        continue;
+      }
+      const next = argv[i + 1];
+      if (next && !next.startsWith("--")) {
+        out.options[name] = next;
+        i++;
       } else {
-        const next = argv[i + 1];
-        if (next && !next.startsWith("--")) {
-          out.options[a.slice(2)] = next;
-          i++;
-        } else {
-          out.options[a.slice(2)] = true;
-        }
+        out.options[name] = true;
       }
       continue;
     }

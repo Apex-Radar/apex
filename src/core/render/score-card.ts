@@ -61,23 +61,23 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   // Score line — front-and-center: Overall · SEO · AEO · AAIV (when available)
   //
   // AEO display is mode-aware:
-  //   • Free mode (audit.aeoCeiling set): "AEO 54/73 portable" — the visible
-  //     /73 ceiling makes the citation-slice gap unmissable. Color-banded
-  //     against the ceiling (54/73 ≈ 74%) so a maxed-out free user gets green.
-  //   • BYOK / Radar (no aeoCeiling): standard "AEO X" out of /100.
+  //   • Capped mode (audit.aeoCeiling set, < 100): "AEO 60/100 (cap 75,
+  //     citation gated)". /100 baseline stays prominent so free-mode scores
+  //     compare apples-to-apples with real graded scores; cap shows in
+  //     parens with the reason.
+  //   • Graded mode (no aeoCeiling): standard "AEO X/100".
+  //
+  // Why /100 baseline (not /Y portable): the previous /Y framing was
+  // dishonest for uncited sites. A user reading "AEO 60/75" reads "80% of
+  // free max" while their real /100 is 60%. Same absolute number, inflated
+  // perceived completeness. /100 with cap-in-parens makes the gap clear.
   //
   // Mode switch is data-driven, NEVER inferred from check statuses or string
-  // templating. If aeoCeiling is undefined, we render the /100 form. Period.
-  const isFreeCapped = typeof audit.aeoCeiling === "number";
-  const aeoSegment = isFreeCapped
-    ? (() => {
-        const ceiling = audit.aeoCeiling as number;
-        const banded = ceiling > 0
-          ? band(Math.round((audit.aeoScore / ceiling) * 100))
-          : band(audit.aeoScore);
-        return `    AEO ${banded}${audit.aeoScore}/${ceiling}${RESET} ${DIM}portable${RESET}`;
-      })()
-    : `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`;
+  // templating. If aeoCeiling is undefined or 100, we render the bare /100.
+  const isCapped = typeof audit.aeoCeiling === "number" && audit.aeoCeiling < 100;
+  const aeoSegment = isCapped
+    ? `    AEO ${band(audit.aeoScore)}${audit.aeoScore}/100${RESET} ${DIM}(cap ${audit.aeoCeiling}, citation gated)${RESET}`
+    : `    AEO ${band(audit.aeoScore)}${audit.aeoScore}/100${RESET}`;
   let scoreLine =
     `Overall  ${band(audit.overallScore)}${audit.overallScore}/100${RESET}` +
     `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
@@ -159,21 +159,24 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push("");
   lines.push(`${DIM}Move AAIV first. AEO compounds after.${RESET}`);
   if (audit.source === "local") {
-    if (isFreeCapped) {
+    if (isCapped) {
       const ceiling = audit.aeoCeiling as number;
       const citationPoints = 100 - ceiling;
       lines.push(
-        `${DIM}This is your score on what we can check from your site's HTML.${RESET}`,
+        `${DIM}This is your score on what we can check from your site's HTML. Free mode caps at ${ceiling}/100.${RESET}`,
       );
       lines.push(
         `${DIM}The remaining ${citationPoints} points come from live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you.${RESET}`,
       );
       lines.push(
-        `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key) or set a Radar token via ${RESET}${BOLD}apex connect${RESET}${DIM}.${RESET}`,
+        `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key, free).${RESET}`,
+      );
+      lines.push(
+        `${DIM}For continuous monitoring across all 113 checks, sign up at ${RESET}${BOLD}https://getapexradar.com${RESET}${DIM}.${RESET}`,
       );
     } else {
       lines.push(
-        `${DIM}BYOK mode active. AEO is graded against the full 100-point scale. Run ${RESET}${BOLD}apex citation "<query>"${RESET}${DIM} for live engine probes.${RESET}`,
+        `${DIM}AEO is graded against the full 100-point scale. Run ${RESET}${BOLD}apex citation "<query>"${RESET}${DIM} for live engine probes.${RESET}`,
       );
     }
   } else {
