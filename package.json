@@ -1,6 +1,6 @@
 {
   "name": "@apexradar/apex",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "The AEO operating system for Claude Code. AAIV first. Citations follow.",
   "license": "MIT",
   "type": "module",
@@ -44,6 +44,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "@apexradar/contracts": "file:../clients/apex-contracts",
     "cheerio": "^1.2.0",
     "diff": "^5.2.0",
     "fast-glob": "^3.3.2",

@@ -18,6 +18,11 @@ export default defineConfig({
   target: "node20",
   shims: true,
   external: ["cheerio"],
+  // @apexradar/contracts is a private file:// dep — bundle it inline so
+  // the published npm tarball doesn't carry an unresolvable file:
+  // reference. Without noExternal, installs of @apexradar/apex would
+  // fail to resolve the import path at runtime.
+  noExternal: ["@apexradar/contracts"],
   define: {
     __APEX_VERSION__: JSON.stringify(pkg.version),
   },

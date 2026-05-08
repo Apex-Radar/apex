@@ -1,4 +1,5 @@
 import type { AuditWrapper, AuditCheck, CheckCategory, CheckStatus } from "./types.js";
+import { AeoAuditResponseSchema, parseOrAlert } from "@apexradar/contracts";
 
 export interface RadarClientOptions {
   baseUrl?: string;
@@ -64,6 +65,18 @@ export class RadarAuditClient {
     const r = await this.f(url, { headers: { accept: "application/json" } });
     if (!r.ok) throw new Error(`Radar audit/latest ${r.status}`);
     const raw = (await r.json()) as any;
+    // Parse-validate against the canonical schema. Drift logs to stderr
+    // (the alert dispatcher default) and falls through to the existing
+    // permissive adapter — keeps the CLI working on legacy responses
+    // while still surfacing wire-shape changes loudly.
+    parseOrAlert(AeoAuditResponseSchema, raw, {
+      source: "GET /aeo-audit/latest",
+      detectedAt: "client-parse",
+      schemaName: "AeoAuditResponse",
+      onDrift: "fallback",
+      fallback: null,
+      context: { token: this.token.slice(0, 8) + "…" },
+    });
 
     // Radar may return either a wrapper {reportId, createdAt, result: {...}} or a bare result.
     // It also uses `name`/`details` per check; we adapt to canonical {title, message}.

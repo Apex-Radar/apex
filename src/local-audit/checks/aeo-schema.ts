@@ -81,7 +81,7 @@ export const aeoSchemaChecks: LocalCheckRunner = (ctx) => {
   if (hasType(types, "FAQPage")) {
     checks.push({ id: "faq-schema", title: "FAQ Schema", category: "AEO", status: "pass", message: "FAQPage schema found.", impact: 5 });
   } else {
-    checks.push({ id: "faq-schema", title: "FAQ Schema", category: "AEO", status: "fail", message: "No FAQPage schema. #1 AEO markup.", impact: 5 });
+    checks.push({ id: "faq-schema", title: "FAQ Schema", category: "AEO", status: "fail", message: "No FAQPage schema. Highest-leverage AEO markup: feeds verbatim Q&A pairs to Perplexity, ChatGPT Search, Claude with web access, and Google's AI Overviews. Google deprecated FAQ rich results in May 2026 but the schema continues to drive AI-Overview citation and is the canonical structured-Q&A signal across non-Google answer engines.", impact: 5 });
   }
 
   // FAQ Schema Visible — only emitted when FAQPage exists
@@ -101,9 +101,9 @@ export const aeoSchemaChecks: LocalCheckRunner = (ctx) => {
       if (matched === questions.length) {
         checks.push({ id: "faq-schema-visible", title: "FAQ Schema Visible", category: "AEO", status: "pass", message: `All ${questions.length} FAQ questions appear in rendered HTML.`, impact: 5 });
       } else if (matched > 0) {
-        checks.push({ id: "faq-schema-visible", title: "FAQ Schema Visible", category: "AEO", status: "warn", message: `${matched} of ${questions.length} FAQ questions found in body. Google penalizes orphan FAQ schema.`, impact: 5 });
+        checks.push({ id: "faq-schema-visible", title: "FAQ Schema Visible", category: "AEO", status: "warn", message: `${matched} of ${questions.length} FAQ questions found in body. Answer engines discount or skip orphan FAQ markup (markup that doesn't match visible content).`, impact: 5 });
       } else {
-        checks.push({ id: "faq-schema-visible", title: "FAQ Schema Visible", category: "AEO", status: "fail", message: "No FAQ questions visible in body. Orphan schema — Google will ignore or penalize.", impact: 5 });
+        checks.push({ id: "faq-schema-visible", title: "FAQ Schema Visible", category: "AEO", status: "fail", message: "No FAQ questions visible in body. Orphan schema is ignored or downweighted by every answer engine that cross-checks markup against rendered content.", impact: 5 });
       }
     }
   }
