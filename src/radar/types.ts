@@ -1,6 +1,6 @@
 // Keep all existing exports, add `source` discriminator + "unknown" citation state.
 
-export type CheckStatus = "pass" | "warn" | "fail";
+export type CheckStatus = "pass" | "warn" | "fail" | "skipped";
 export type CheckCategory = "SEO" | "AEO";
 
 export interface AuditCheck {
@@ -51,6 +51,17 @@ export interface AuditResult {
   domainAgeContext?: string;
   /** "radar" = enriched by Apex Radar; "local" = computed in-skill. */
   source: "radar" | "local";
+  /**
+   * Free-mode AEO ceiling (e.g., 73 when 13 of 49 AEO checks are citation-only
+   * and skipped). Present ONLY when running without BYOK / Radar — its presence
+   * is the explicit signal to the renderer to display "AEO X/Y portable" with
+   * an unlock disclaimer. When BYOK keys are configured (or in Radar mode) this
+   * field is absent and the renderer falls back to the standard "AEO X/100".
+   *
+   * Mode switch must be explicit (data-driven), never inferred from check
+   * statuses or templating conditions.
+   */
+  aeoCeiling?: number;
 }
 
 export interface AuditWrapper {

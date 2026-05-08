@@ -59,10 +59,29 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push("");
 
   // Score line — front-and-center: Overall · SEO · AEO · AAIV (when available)
+  //
+  // AEO display is mode-aware:
+  //   • Free mode (audit.aeoCeiling set): "AEO 54/73 portable" — the visible
+  //     /73 ceiling makes the citation-slice gap unmissable. Color-banded
+  //     against the ceiling (54/73 ≈ 74%) so a maxed-out free user gets green.
+  //   • BYOK / Radar (no aeoCeiling): standard "AEO X" out of /100.
+  //
+  // Mode switch is data-driven, NEVER inferred from check statuses or string
+  // templating. If aeoCeiling is undefined, we render the /100 form. Period.
+  const isFreeCapped = typeof audit.aeoCeiling === "number";
+  const aeoSegment = isFreeCapped
+    ? (() => {
+        const ceiling = audit.aeoCeiling as number;
+        const banded = ceiling > 0
+          ? band(Math.round((audit.aeoScore / ceiling) * 100))
+          : band(audit.aeoScore);
+        return `    AEO ${banded}${audit.aeoScore}/${ceiling}${RESET} ${DIM}portable${RESET}`;
+      })()
+    : `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`;
   let scoreLine =
     `Overall  ${band(audit.overallScore)}${audit.overallScore}/100${RESET}` +
     `    SEO ${band(audit.seoScore)}${audit.seoScore}${RESET}` +
-    `    AEO ${band(audit.aeoScore)}${audit.aeoScore}${RESET}`;
+    aeoSegment;
   if (audit.readiness) {
     scoreLine += `    AAIV ${band(audit.readiness.score)}${audit.readiness.score}/100${RESET}`;
   }
@@ -98,12 +117,16 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   const passes = audit.checks.filter((c) => c.status === "pass").length;
   const warns = audit.checks.filter((c) => c.status === "warn").length;
   const fails = audit.checks.filter((c) => c.status === "fail").length;
+  const skipped = audit.checks.filter((c) => c.status === "skipped").length;
   lines.push("");
+  const skippedSegment =
+    skipped > 0 ? `  ${DIM}🔒 ${skipped} skipped${RESET}` : "";
   lines.push(
     `${BOLD}${total} checks${RESET}  ` +
       `${GREEN}✓ ${passes} pass${RESET}  ` +
       `${YELLOW}⚠ ${warns} warn${RESET}  ` +
-      `${RED}✗ ${fails} fail${RESET}`,
+      `${RED}✗ ${fails} fail${RESET}` +
+      skippedSegment,
   );
 
   // Failing checks — grouped by category, AEO first
@@ -136,11 +159,23 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
   lines.push("");
   lines.push(`${DIM}Move AAIV first. AEO compounds after.${RESET}`);
   if (audit.source === "local") {
-    lines.push(
-      `${DIM}Local mode: AI citation grading isn't probed. To grade "Are you cited?", either set ${RESET}` +
-        `${BOLD}APEX_RADAR_PORTAL_TOKEN${RESET}${DIM} (Radar Portal — paid) or run ${RESET}` +
-        `${BOLD}apex citation "<query>"${RESET}${DIM} with your own LLM key (BYOK, free).${RESET}`,
-    );
+    if (isFreeCapped) {
+      const ceiling = audit.aeoCeiling as number;
+      const citationPoints = 100 - ceiling;
+      lines.push(
+        `${DIM}This is your score on what we can check from your site's HTML.${RESET}`,
+      );
+      lines.push(
+        `${DIM}The remaining ${citationPoints} points come from live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you.${RESET}`,
+      );
+      lines.push(
+        `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key) or set a Radar token via ${RESET}${BOLD}apex connect${RESET}${DIM}.${RESET}`,
+      );
+    } else {
+      lines.push(
+        `${DIM}BYOK mode active. AEO is graded against the full 100-point scale. Run ${RESET}${BOLD}apex citation "<query>"${RESET}${DIM} for live engine probes.${RESET}`,
+      );
+    }
   } else {
     lines.push(
       `${DIM}Next: ${RESET}${BOLD}apex fix <fixer-id> --dry-run${RESET}${DIM} to start closing the top fails. ${RESET}` +

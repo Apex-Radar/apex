@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-05-08
+
+### Fixed
+
+- **Free-mode AEO score is now mathematically honest.** Previously, `apex visibility` in free mode silently dropped the 13 citation checks (ChatGPT/Claude/Perplexity probes, multi-provider coverage, brand accuracy, etc.) from the AEO denominator, which inflated the displayed score. On a real test site this produced AEO 79 against a true ceiling of 75, which is mathematically impossible. Now the 13 citation checks are emitted with a new `"skipped"` status and counted in the denominator. The free-mode AEO score caps at the ceiling derived from the actual portable-check inventory and renders as `AEO 60/75 portable` instead of `AEO 79`. Users see the real score, the visible ceiling, and an explicit unlock path.
+- **Closing footer in free mode now explains why the score is capped.** Three lines below the scorecard: what the score covers ("what we can check from your site's HTML"), what's missing ("live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you"), and the unlock path (`apex keys set openai|anthropic|perplexity` or `apex connect` for a Radar token). Plain language, no jargon.
+
+### Added
+
+- **`"skipped"` status on `AuditCheck`.** New status alongside `pass`/`warn`/`fail`. Skipped checks stay in the denominator (so they pull the score down honestly) but are not counted as passes. Renders with a 🔒 glyph in the counts summary line.
+- **`aeoCeiling` field on `AuditResult`.** Optional number, present when at least one AEO check is `skipped`. Renderer reads this field to switch between `AEO X/Y portable` and `AEO X/100`. Data-driven, never inferred.
+
+### Notes for BYOK users
+
+- BYOK keys (OpenAI/Anthropic/Perplexity) still work the same way: run `apex citation "<query>"` to spot-grade a citation. Inline citation grading inside `apex visibility` is on the v0.1.6 roadmap. Until then, BYOK and free CLI render the same capped output. Configuring a key alone doesn't change the score; only graded probe results do.
+
 ## [0.1.4] — 2026-05-07
 
 ### Added

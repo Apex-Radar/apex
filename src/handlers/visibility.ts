@@ -5,6 +5,25 @@ import { fetchLatestAudit } from "../radar/audit-client.js";
 import { getRadarPortalToken } from "../core/keys/manager.js";
 import type { AuditResult } from "../radar/types.js";
 
+// NOTE: an earlier iteration of this handler detected BYOK keys (OpenAI /
+// Anthropic / Perplexity) and flipped a `byokMode` flag that suppressed the
+// 13 citation stubs from the local audit. That was wrong: a configured key
+// is not the same as a citation probe having actually run. Without inline
+// probe integration, "BYOK mode" silently dropped 13 checks from the
+// denominator → score reverted to the pre-fix inflated number. Same
+// dishonest-denominator bug, different label.
+//
+// Correct model: the AEO ceiling reflects ACTUAL grading state, not user
+// intent. Stubs stay `skipped` until probes graded them (via inline run or
+// `apex citation` write-back). The renderer drives the mode switch off
+// `aeoCeiling`, which `runLocalAudit` derives from the live skipped count.
+// Key presence alone never flips the display.
+//
+// When inline citation probes are wired up (forward-compat hook in
+// `runLocalAudit` is `inlineCitationProbes`), this handler will run them
+// before invoking the audit and pass `inlineCitationProbes: true` so stubs
+// are replaced with graded results instead of skipped.
+
 export interface VisibilityFlags {
   url?: string;
   json?: boolean;
