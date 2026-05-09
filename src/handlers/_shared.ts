@@ -41,14 +41,3 @@ export function emit(json: boolean, data: unknown, pretty: () => string): void {
   }
 }
 
-export async function requireToken(keysMod: { get(p: any): Promise<string | null> }): Promise<string> {
-  const t = await keysMod.get("radar_portal");
-  if (!t) {
-    throw new Error(
-      "Radar portal token not found. Set APEX_RADAR_PORTAL_TOKEN or run: apex keys set radar_portal",
-    );
-  }
-  return t;
-}
-
-export const RADAR_BASE = process.env.APEX_RADAR_BASE_URL || "https://app.getapexradar.com";

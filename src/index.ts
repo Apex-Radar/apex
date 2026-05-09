@@ -1,5 +1,7 @@
-export { RadarAuditClient } from "./radar/audit-client.js";
-export { RadarAivClient } from "./radar/aiv-client.js";
+// Shared types — kept under src/radar/types.ts for historical reasons
+// (the file was named before "Radar mode" was retired in v0.2.0). The
+// types describe AAIV / AEO scoring shapes used by both the local
+// Cheerio audit and BYOK probes.
 export type {
   AuditCheck,
   AuditResult,
@@ -11,18 +13,6 @@ export type {
   AeoReadiness,
   AeoReadinessSubpillars,
   DomainInfo,
-  AivResult,
-  AivWrapper,
-  AivConfig,
-  AivTrendPoint,
-  AnswerGapRow,
-  AnswerGapResponse,
-  CompetitorScore,
-  EngineId,
-  MentionDetail,
-  PerEngineScore,
-  QueryResult,
-  VerificationStatus,
   CheckCategory,
   CheckStatus,
 } from "./radar/types.js";
@@ -40,12 +30,6 @@ export { detectFramework } from "./core/framework/detect.js";
 export type { Framework, DetectionResult } from "./core/framework/detect.js";
 
 export { renderScoreCard, renderAiv } from "./core/render/score-card.js";
-
-export { rankGaps, specForRow, planBriefs } from "./workflow/answer-gap.js";
-export type { BriefSpec } from "./workflow/answer-gap.js";
-
-export { compareScans, renderProve } from "./workflow/prove.js";
-export type { ProveDelta } from "./workflow/prove.js";
 
 // Injected at build time by tsup's `define` from package.json. See tsup.config.ts.
 // Falls back to "0.0.0-dev" when running un-built (e.g. tsx / vitest dev mode).

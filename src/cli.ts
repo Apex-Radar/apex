@@ -8,29 +8,22 @@ type Handler = (argv: string[]) => Promise<number>;
 
 const COMMANDS: Record<string, () => Promise<{ run: Handler }>> = {
   visibility: () => import("./handlers/visibility.js"),
-  gaps:       () => import("./handlers/gaps.js"),
   fix:        () => import("./handlers/fix.js"),
-  prove:      () => import("./handlers/prove.js"),
-  audit:      () => import("./handlers/audit.js"),
+  citation:   () => import("./handlers/citation.js"),
   keys:       () => import("./handlers/keys.js"),
   costs:      () => import("./handlers/costs.js"),
-  trends:     () => import("./handlers/trends.js"),
-  citation:   () => import("./handlers/citation.js"),
 };
 
-const HELP = `apex ${APEX_VERSION}  —  Apex AI Visibility for Claude Code & CLI
+const HELP = `apex ${APEX_VERSION}  —  AAIV (Apex AI Visibility) for the terminal
+Built by Apex Radar · https://getapexradar.com
 
 Usage:
   apex <command> [options]
 
 Commands:
-  visibility   Show AAIV + AEO posture (Radar latest)
-  gaps         List Answer Gap rows; rank highest-impact first
+  visibility   Score AAIV + AEO posture for any URL (free local audit; BYOK fills citation slots → /100)
+  citation     Ad-hoc citation probe — does ChatGPT / Claude / Perplexity cite your brand for a query? (BYOK)
   fix          Apply a fixable check (schema, llms.txt, crawler access, ...)
-  prove        Compare two AIV scans before/after a fix
-  audit        Run a fresh Radar AEO scan
-  citation     BYOK ad-hoc citation probe (uses your own LLM keys)
-  trends       Show AIV trend over time
   keys         Manage BYOK API keys (keychain or env vars)
   costs        Inspect local BYOK cost ledger
 
@@ -39,8 +32,13 @@ Global flags:
   --help       Show command help
   --version    Print version
 
-BYOK: Apex never proxies LLM calls. You supply your own provider keys.
-Radar features require a portal token (APEX_RADAR_PORTAL_TOKEN).`;
+AAIV is the Apex AI Visibility metric — created by Apex Radar to score how
+ready your site is to be cited by AI engines. The free CLI audit uses
+local Cheerio parsing (no API calls). Bring your own LLM keys with
+\`apex keys set openai|anthropic|perplexity\` to fill the live citation
+checks and unlock the full /100 score. The full product (history,
+multi-page audits, competitor monitoring, scheduled scans) lives at
+https://getapexradar.com.`;
 
 async function main(argv: string[]): Promise<number> {
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h" || argv[0] === "help") {

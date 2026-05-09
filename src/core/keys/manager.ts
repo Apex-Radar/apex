@@ -8,8 +8,7 @@ export type ProviderId =
   | "gemini"
   | "grok"
   | "deepseek"
-  | "firecrawl"
-  | "radar_portal";
+  | "firecrawl";
 
 const ENV_MAP: Record<ProviderId, string> = {
   openai: "APEX_OPENAI_API_KEY",
@@ -19,7 +18,6 @@ const ENV_MAP: Record<ProviderId, string> = {
   grok: "APEX_GROK_API_KEY",
   deepseek: "APEX_DEEPSEEK_API_KEY",
   firecrawl: "APEX_FIRECRAWL_API_KEY",
-  radar_portal: "APEX_RADAR_PORTAL_TOKEN",
 };
 
 const SERVICE = "apex-skill";
@@ -104,7 +102,3 @@ export class KeyManager {
 }
 
 export const keys = new KeyManager();
-
-export async function getRadarPortalToken(): Promise<string | null> {
-  return keys.get("radar_portal");
-}

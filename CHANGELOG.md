@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-05-09
+
+### BREAKING
+
+- **Removed 4 commands that required a Radar workspace token:** `apex audit`, `apex gaps`, `apex prove`, `apex trends`. Also removed `apex-connect` skill template. The Radar workspace token (`radar_portal` provider) was a leftover from an earlier funnel theory and has been retired from the CLI's surface entirely. The portal product (https://getapexradar.com) is the persistence layer; the CLI is the public-good audit.
+- **`radar_portal` is no longer a valid `apex keys` provider.** `apex keys set radar_portal …` now errors. Existing keychain entries are orphaned and harmless; remove with your OS keychain UI if desired.
+- **`--local` flag removed from `apex visibility`.** The CLI is now single-mode (always local Cheerio audit). The flag was vestigial without a Radar mode to opt out of.
+- **Public library exports trimmed.** `RadarAuditClient`, `RadarAivClient`, and several AIV/answer-gap workflow types are no longer exported from `@apexradar/apex`. The `AuditResult` shape and supporting types are still exported.
+
+### Changed
+
+- **CLI surface focused on its real job: AAIV awareness.** Single mission — score any URL with the local Cheerio audit; BYOK keys (OpenAI / Anthropic / Perplexity / Gemini / Grok / DeepSeek / Firecrawl) for the citation slots. Apex Radar brand attribution is prominent in `--help`, scorecard footer, README, and SKILL.md, with a clean link to https://getapexradar.com for the full product (history, multi-page, monitoring, alerts).
+- **Score-card footer reframed.** Drops the "set a Radar token" unlock pitch. Now: BYOK as the only unlock path for the citation slots, plus brand attribution and a non-pushy product link.
+- **Citation stub messages no longer mention "or a Radar token."** Just BYOK.
+- **`apex --help` rewritten** with a brand-prominent header crediting Apex Radar and explaining what AAIV is.
+
+### Removed
+
+- `src/handlers/audit.ts`, `gaps.ts`, `prove.ts`, `trends.ts`
+- `src/radar/audit-client.ts`, `aiv-client.ts`
+- `src/workflow/answer-gap.ts`, `prove.ts`
+- `commands/apex-audit.md`, `apex-gaps.md`, `apex-prove.md`, `apex-trends.md`, `apex-connect.md`, `apex-defend.md`
+- `requireToken()` helper from `_shared.ts` and `_flags.ts`
+- `RADAR_BASE` constant, `getRadarPortalToken()` function
+- `tests/answer-gap.test.ts`, `tests/prove.test.ts`
+
 ## [0.1.6] — 2026-05-08
 
 ### Fixed

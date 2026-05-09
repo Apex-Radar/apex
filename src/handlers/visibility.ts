@@ -1,97 +1,58 @@
 import { parseFlags, resolveUrl } from "./_flags.js";
 import { renderScoreCard } from "../core/render/score-card.js";
 import { runLocalAudit } from "../local-audit/index.js";
-import { fetchLatestAudit } from "../radar/audit-client.js";
-import { getRadarPortalToken } from "../core/keys/manager.js";
 import type { AuditResult } from "../radar/types.js";
 
-// NOTE: an earlier iteration of this handler detected BYOK keys (OpenAI /
-// Anthropic / Perplexity) and flipped a `byokMode` flag that suppressed the
-// 13 citation stubs from the local audit. That was wrong: a configured key
-// is not the same as a citation probe having actually run. Without inline
-// probe integration, "BYOK mode" silently dropped 13 checks from the
-// denominator → score reverted to the pre-fix inflated number. Same
-// dishonest-denominator bug, different label.
-//
-// Correct model: the AEO ceiling reflects ACTUAL grading state, not user
-// intent. Stubs stay `skipped` until probes graded them (via inline run or
-// `apex citation` write-back). The renderer drives the mode switch off
-// `aeoCeiling`, which `runLocalAudit` derives from the live skipped count.
-// Key presence alone never flips the display.
-//
-// When inline citation probes are wired up (forward-compat hook in
-// `runLocalAudit` is `inlineCitationProbes`), this handler will run them
-// before invoking the audit and pass `inlineCitationProbes: true` so stubs
-// are replaced with graded results instead of skipped.
+// Single-mode CLI as of v0.2.0:
+//   • URL passed → run the local Cheerio audit on that URL.
+//   • No URL → friendly error with usage hint.
+// BYOK keys (OpenAI / Anthropic / Perplexity) configured?
+//   The audit emits 13 citation `skipped` stubs and the renderer caps AEO
+//   at /75 — same in both states today. Inline citation probes (the
+//   forward-compat hook `inlineCitationProbes` on `runLocalAudit`) will
+//   wire keys → graded checks → /100 in a follow-up release. Until then
+//   key presence is honest about not changing the score: stubs only flip
+//   to graded when probes have actually run.
 
 export interface VisibilityFlags {
   url?: string;
   json?: boolean;
-  local?: boolean;
-  workspace?: string;
 }
 
 export async function visibility(flags: VisibilityFlags): Promise<string> {
-  const token = flags.workspace ?? (await getRadarPortalToken());
-
-  // Routing rule (v0.1.6+):
-  //   • URL passed (positional or --url) → ALWAYS run local audit on that URL.
-  //     Without this, a configured Radar token silently overrides the URL and
-  //     dumps the workspace's last cached scan instead of scanning what the
-  //     user typed. People should be able to scan as many URLs as they want.
-  //   • No URL + Radar token → fetch the workspace's latest audit (Radar mode).
-  //   • No URL + no token → friendly error with usage hint.
-  //   • --local explicit → force local audit even if a token is set (this
-  //     case still requires a URL — error out otherwise).
-  const userPassedUrl = Boolean(flags.url);
-  const useRadar = !flags.local && !userPassedUrl && Boolean(token);
-
-  let result: AuditResult;
-  if (useRadar) {
-    const wrapper = await fetchLatestAudit(token!);
-    result = wrapper.result;
-  } else {
-    if (!flags.url) {
-      throw new Error(
-        "apex visibility needs a URL.\n" +
-        "  apex visibility example.com\n" +
-        "  apex visibility example.com --local\n" +
-        "  apex visibility --url https://example.com\n" +
-        "If you have a Radar workspace token configured, running `apex visibility` with NO URL fetches your workspace's latest audit.",
-      );
-    }
-    result = await runLocalAudit({ url: flags.url });
+  if (!flags.url) {
+    throw new Error(
+      "apex visibility needs a URL.\n" +
+      "  apex visibility example.com\n" +
+      "  apex visibility --url https://example.com\n" +
+      "Bare domains work — https:// is auto-prepended.",
+    );
   }
-
+  const result: AuditResult = await runLocalAudit({ url: flags.url });
   if (flags.json) return JSON.stringify(result, null, 2);
-  let out = renderScoreCard(result);
-  // Heads-up when a Radar token IS configured but we went local because the
-  // user passed a URL. Avoids the user thinking their token isn't working.
-  if (token && !flags.local && userPassedUrl) {
-    out += "\n\n\x1b[2mNote: scanning " + flags.url + " in local mode (capped scoring). To grade this URL with full Radar coverage, scan it from app.getapexradar.com.\x1b[0m";
-  }
-  return out;
+  return renderScoreCard(result);
 }
 
 export async function run(argv: string[]): Promise<number> {
   const f = parseFlags(argv);
   if (f.help) {
     console.log(
-      "apex visibility — show AAIV + AEO posture\n" +
-      "  apex visibility <url>    target URL for local audit (positional, no flag needed)\n" +
+      "apex visibility — score AAIV + AEO posture for any URL\n" +
+      "  apex visibility <url>    target URL (positional, no flag needed)\n" +
       "  --url <url>              same, via flag\n" +
-      "  --local                  force local audit even if a Radar token is set\n" +
       "  --json                   machine-readable output\n" +
       "\n" +
-      "Bare domains work too: apex visibility example.com (https:// auto-prepended).",
+      "Bare domains work too: apex visibility example.com (https:// auto-prepended).\n" +
+      "\n" +
+      "AAIV is the Apex AI Visibility metric — a 0–100 score for how ready\n" +
+      "your site is to be cited by AI engines (ChatGPT, Claude, Perplexity, Gemini).\n" +
+      "Built by Apex Radar · https://getapexradar.com",
     );
     return 0;
   }
   const out = await visibility({
     url: resolveUrl(f),
     json: f.json,
-    local: Boolean(f.options.local),
-    workspace: f.options.workspace as string | undefined,
   });
   console.log(out);
   return 0;

@@ -2,7 +2,7 @@ import { parseFlags, emit } from "./_flags.js";
 import { keys, type ProviderId } from "../core/keys/manager.js";
 
 const PROVIDERS: ProviderId[] = [
-  "openai", "anthropic", "perplexity", "gemini", "grok", "deepseek", "firecrawl", "radar_portal",
+  "openai", "anthropic", "perplexity", "gemini", "grok", "deepseek", "firecrawl",
 ];
 
 export async function run(argv: string[]): Promise<number> {

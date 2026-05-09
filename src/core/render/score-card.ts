@@ -1,5 +1,7 @@
 // Pretty terminal renderer for AAIV + AEO posture. No deps.
-// Reads the unified AuditResult shape (source: "radar" | "local").
+// Reads the unified AuditResult shape. As of v0.2.0 the CLI is single-mode
+// (local Cheerio audit only); the `source` field stays in the type for
+// historical reasons and always reads "local".
 //
 // v0.1.1 — comprehensive output: shows all failures + warnings grouped by
 // category, with counts and Radar upsell. Free CLI = full diagnosis,
@@ -155,36 +157,33 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
     }
   }
 
-  // Closing line + Radar upsell
+  // Closing line + brand attribution
   lines.push("");
   lines.push(`${DIM}Move AAIV first. AEO compounds after.${RESET}`);
-  if (audit.source === "local") {
-    if (isCapped) {
-      const ceiling = audit.aeoCeiling as number;
-      const citationPoints = 100 - ceiling;
-      lines.push(
-        `${DIM}This is your score on what we can check from your site's HTML. Free mode caps at ${ceiling}/100.${RESET}`,
-      );
-      lines.push(
-        `${DIM}The remaining ${citationPoints} points come from live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you.${RESET}`,
-      );
-      lines.push(
-        `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key, free).${RESET}`,
-      );
-      lines.push(
-        `${DIM}For continuous monitoring across all 113 checks, sign up at ${RESET}${BOLD}https://getapexradar.com${RESET}${DIM}.${RESET}`,
-      );
-    } else {
-      lines.push(
-        `${DIM}AEO is graded against the full 100-point scale. Run ${RESET}${BOLD}apex citation "<query>"${RESET}${DIM} for live engine probes.${RESET}`,
-      );
-    }
+  if (isCapped) {
+    const ceiling = audit.aeoCeiling as number;
+    const citationPoints = 100 - ceiling;
+    lines.push(
+      `${DIM}This is your score on what we can check from your site's HTML. Free mode caps at ${ceiling}/100.${RESET}`,
+    );
+    lines.push(
+      `${DIM}The remaining ${citationPoints} points come from live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you.${RESET}`,
+    );
+    lines.push(
+      `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key, free).${RESET}`,
+    );
   } else {
     lines.push(
-      `${DIM}Next: ${RESET}${BOLD}apex fix <fixer-id> --dry-run${RESET}${DIM} to start closing the top fails. ${RESET}` +
-        `${DIM}Ranked Answer Gap rows (${RESET}${BOLD}apex gaps${RESET}${DIM}) require the Radar Answer Gap module — separate from AIV scans.${RESET}`,
+      `${DIM}AEO is graded against the full 100-point scale. Run ${RESET}${BOLD}apex citation "<query>"${RESET}${DIM} for ad-hoc engine probes.${RESET}`,
     );
   }
+  lines.push("");
+  lines.push(
+    `${DIM}AAIV is the Apex AI Visibility metric — built by Apex Radar.${RESET}`,
+  );
+  lines.push(
+    `${DIM}Full product (history, multi-page audits, competitor monitoring, scheduled scans): ${RESET}${BOLD}https://getapexradar.com${RESET}`,
+  );
   lines.push(`${DIM}Run with ${BOLD}--json${RESET}${DIM} to get the full check list as machine-readable output.${RESET}`);
   return lines.join("\n");
 }

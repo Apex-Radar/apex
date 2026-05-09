@@ -6,7 +6,7 @@ args:
     description: One of list, set, remove.
     required: false
   - name: provider
-    description: Provider id (openai, anthropic, perplexity, gemini, grok, deepseek, firecrawl, radar_portal).
+    description: Provider id (openai, anthropic, perplexity, gemini, grok, deepseek, firecrawl).
     required: false
 ---
 
@@ -37,5 +37,4 @@ apex keys remove <PROVIDER>
 ## Important
 
 - Apex never proxies LLM calls — keys go straight from the user's machine to the provider.
-- Treat `radar_portal` like any other secret. It belongs in keychain, not in any file.
 - Do not echo full keys back into the chat. Confirm by last 4 chars only.

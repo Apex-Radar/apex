@@ -16,6 +16,6 @@ describe("KeyManager env fallback", () => {
 
   it("envVarName is APEX_-prefixed", () => {
     expect(km.envVarName("openai")).toBe("APEX_OPENAI_API_KEY");
-    expect(km.envVarName("radar_portal")).toBe("APEX_RADAR_PORTAL_TOKEN");
+    expect(km.envVarName("anthropic")).toBe("APEX_ANTHROPIC_API_KEY");
   });
 });
