@@ -85,15 +85,20 @@ apex visibility https://yoursite.com
 
 The CLI runs entirely locally. It fetches the URL, parses the HTML in-process with Cheerio, and runs the full check suite on your machine. No backend, no signup, no data leaves.
 
-**Citation slots:** 13 of the AEO checks need to actually call the AI engines (ChatGPT / Claude / Perplexity) to grade — that can't happen from HTML alone. Without BYOK keys, those 13 emit as `skipped` and the AEO score is honestly capped at /75. With your own LLM keys configured, the citation slots fill in and AEO grades against the full /100 scale.
+**Citation slots:** 13 of the AEO checks need to actually call the AI engines (ChatGPT / Claude / Perplexity) to grade — that can't happen from HTML alone. Without BYOK keys, those 13 emit as `skipped` and the AEO score is honestly capped at /75. With BYOK keys configured, `apex visibility <url>` automatically fans out probes in parallel to every provider you've set up, fills the matching citation slots with graded results, and renders the score against the /100 scale.
 
 ```bash
 apex keys set openai <your-openai-key>
 apex keys set anthropic <your-anthropic-key>
 apex keys set perplexity <your-perplexity-key>
+
+apex visibility yoursite.com
+# → AEO grades against /100; cost shown in the footer; probes logged to ~/.apex/ledger.jsonl
 ```
 
-You pay the providers directly. Apex Radar never sees your traffic, your keys, or your data.
+Configure one provider → only its per-engine slots grade (others stay `skipped`, ceiling rises but not to /100). Configure all three → every citation slot grades, /100 unlocked. You can scope what the probes ask with `--query "<question>"` and override the auto-derived brand with `--brand "<name>"`.
+
+You pay the providers directly. Apex Radar never sees your traffic, your keys, or your data. Probes use cheap models by default: `gpt-4o-mini`, `claude-3-5-haiku`, `perplexity sonar` — typical full 3-engine probe runs ~$0.01–0.05 per scan.
 
 ---
 

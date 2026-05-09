@@ -173,3 +173,52 @@ export async function runLocalAudit(
 export { CITATION_CHECK_STUBS };
 
 export type { LocalAuditInput };
+
+/**
+ * Replace skipped citation stubs with graded versions from BYOK probes,
+ * then recompute aeoScore + overallScore + aeoCeiling + readinessScore so
+ * the result reflects the new check states honestly.
+ *
+ * Stubs are matched by `id` — any graded check whose id matches an
+ * existing stub overwrites that stub. Graded checks with new ids are
+ * appended (raises the denominator). Skipped stubs without a graded
+ * counterpart stay skipped (keeps the denominator honest at 49 AEO).
+ *
+ * Mutates `audit` in place AND returns it for ergonomic chaining.
+ */
+export function applyInlineProbeResults(
+  audit: AuditResult,
+  graded: AuditCheck[],
+): AuditResult {
+  if (!graded.length) return audit;
+  const byId = new Map<string, AuditCheck>(graded.map((c) => [c.id, c]));
+  const next: AuditCheck[] = [];
+  const seen = new Set<string>();
+  for (const c of audit.checks) {
+    const replacement = byId.get(c.id);
+    if (replacement) {
+      next.push(replacement);
+      seen.add(c.id);
+    } else {
+      next.push(c);
+    }
+  }
+  // Any graded check whose id wasn't already in the result gets appended.
+  for (const g of graded) {
+    if (!seen.has(g.id)) next.push(g);
+  }
+  audit.checks = next;
+  audit.seoScore = scoreFor(next, "SEO");
+  audit.aeoScore = scoreFor(next, "AEO");
+  audit.overallScore = Math.round((audit.seoScore + audit.aeoScore) / 2);
+  const { score: rs, label: rl } = readinessScoreFromAeo(next);
+  audit.readiness.score = rs;
+  audit.readiness.label = rl;
+  const newCeiling = computeAeoCeiling(next);
+  if (newCeiling >= 100) {
+    delete (audit as Partial<AuditResult>).aeoCeiling;
+  } else {
+    audit.aeoCeiling = newCeiling;
+  }
+  return audit;
+}

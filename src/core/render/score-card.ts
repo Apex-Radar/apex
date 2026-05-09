@@ -170,7 +170,7 @@ export function renderScoreCard(input: AuditResult | AuditWrapper): string {
       `${DIM}The remaining ${citationPoints} points come from live AI citation checks: whether ChatGPT, Claude, and Perplexity actually mention you.${RESET}`,
     );
     lines.push(
-      `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity${RESET}${DIM} (use your own AI key, free).${RESET}`,
+      `${DIM}To grade those, run ${RESET}${BOLD}apex keys set openai|anthropic|perplexity ${RESET}${DIM}(use your own keys, free) then re-scan. All three configured → AEO grades against /100.${RESET}`,
     );
   } else {
     lines.push(

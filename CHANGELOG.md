@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-05-09
+
+### Added — BYOK is finally real
+
+This release closes the gap between what the BYOK pitch promised (since v0.1.5) and what the CLI actually did with your keys (nothing). v0.2.0 surfaced the gap honestly via the `/75` cap; v0.2.1 wires the actual probes.
+
+- **`apex visibility <url>` now runs BYOK probes inline.** When OpenAI / Anthropic / Perplexity keys are configured, the CLI fans out probe calls in parallel after the local audit, parses each response for citation signals, and replaces the matching skipped stubs with graded `pass`/`warn`/`fail` checks. The `aeoCeiling` rises with each provider configured. With all three configured, AEO renders against /100 and the ceiling drops off the result.
+- **`--query "<question>"`** flag lets you scope what the probes ask. Default: the brand name.
+- **`--brand "<name>"`** flag overrides the auto-derived brand. Default: derived from the URL hostname (`getapexradar.com` → `Getapexradar`).
+- **`--no-probes`** flag forces local-only audit even when keys are configured (useful for CI / testing / when you don't want to spend API credits on a re-scan).
+- **`apex citation`** standalone now supports `--provider anthropic` and `--provider perplexity` in addition to `openai`. Previous releases errored with "not yet implemented." Gemini, Grok, DeepSeek still error with a more honest message.
+- **Per-probe cost ledger entries.** Every probe call writes to `~/.apex/ledger.jsonl` so `apex costs` shows you exactly what you spent.
+- **Composite check slots** (multi-provider, ai-readiness-composite, ai-citation-test, ai-query-coverage, ai-readiness-estimate) auto-fill when ≥2 providers ran.
+- **Probe failures surface clearly** in the scorecard footer rather than failing silently. If your OpenAI key is rate-limited, you see the exact error.
+
+### Fixed
+
+- **The biggest gap that's been live since v0.1.5: BYOK keys did nothing visible in `apex visibility`.** Configuring keys would store them in keychain but never trigger a probe — the AEO score stayed capped at /75 regardless. Now: keys configured → probes run → score reflects the graded results.
+- **Score-card footer no longer claims `apex keys set openai|anthropic|perplexity` is a real unlock when only OpenAI was wired.** Updated copy describes the actual fan-out behavior.
+- **Citation stub messages no longer reference unimplemented providers as if they worked.**
+
+### Tests
+
+- **+10 new tests** covering the BYOK probe pipeline end-to-end: probe-shape, probe-to-checks mapping, composite-slot logic, audit-merger flips, ceiling drop. Total 26 tests, all green. These would have caught the v0.1.5 → v0.2.0 gap at build time.
+
+### Honesty notes
+
+- Provider models used (cheapest viable for citation probes): `gpt-4o-mini`, `claude-3-5-haiku-20241022`, `perplexity sonar`. Typical full 3-provider scan ~$0.01–0.05 in BYOK costs.
+- Heuristics in the OpenAI probe (competitor extraction via TitleCase regex, sentiment via lexical scan) are intentionally imperfect — they're a useful first signal, not a replacement for an LLM-based judge. A future release can swap them for proper classification calls if needed.
+
 ## [0.2.0] — 2026-05-09
 
 ### BREAKING

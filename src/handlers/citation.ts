@@ -38,12 +38,63 @@ async function probeOpenAi(apiKey: string, query: string, brand: string): Promis
   };
 }
 
+async function probeAnthropic(apiKey: string, query: string, brand: string): Promise<Omit<ProbeOutcome, "provider" | "estimatedUsd">> {
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-3-5-haiku-20241022",
+      max_tokens: 400,
+      messages: [{ role: "user", content: query }],
+    }),
+  });
+  if (!r.ok) throw new Error(`anthropic ${r.status}: ${await r.text()}`);
+  const j: any = await r.json();
+  const text: string = j?.content?.[0]?.text ?? "";
+  const lower = text.toLowerCase();
+  const b = brand.toLowerCase();
+  return {
+    query,
+    cited: lower.includes(b) && /https?:\/\/[^\s)]+/i.test(text),
+    mentioned: lower.includes(b),
+    excerpt: text.slice(0, 280),
+  };
+}
+
+async function probePerplexity(apiKey: string, query: string, brand: string): Promise<Omit<ProbeOutcome, "provider" | "estimatedUsd">> {
+  const r = await fetch("https://api.perplexity.ai/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: "sonar",
+      messages: [{ role: "user", content: query }],
+      max_tokens: 400,
+    }),
+  });
+  if (!r.ok) throw new Error(`perplexity ${r.status}: ${await r.text()}`);
+  const j: any = await r.json();
+  const text: string = j?.choices?.[0]?.message?.content ?? "";
+  const sources: string[] = Array.isArray(j?.citations) ? j.citations : [];
+  const lower = text.toLowerCase();
+  const b = brand.toLowerCase();
+  return {
+    query,
+    cited: lower.includes(b) && (sources.length > 0 || /https?:\/\/[^\s)]+/i.test(text)),
+    mentioned: lower.includes(b),
+    excerpt: text.slice(0, 280),
+  };
+}
+
 export async function run(argv: string[]): Promise<number> {
   const f = parseFlags(argv);
   if (f.help) {
     console.log(
       "apex citation — BYOK ad-hoc citation probe\n" +
-      "  --provider <id>   openai (more providers in upcoming releases)\n" +
+      "  --provider <id>   openai (default), anthropic, or perplexity\n" +
       "  --query <q>       query to probe (repeatable; or pass --queries-file)\n" +
       "  --brand <name>    brand name to match (required)\n" +
       "  --queries-file <path>  newline-separated queries\n" +
@@ -75,8 +126,14 @@ export async function run(argv: string[]): Promise<number> {
     if (provider === "openai") {
       const res = await probeOpenAi(apiKey, q, brand);
       outcome = { provider, ...res, estimatedUsd: est.estimatedUsd };
+    } else if (provider === "anthropic") {
+      const res = await probeAnthropic(apiKey, q, brand);
+      outcome = { provider, ...res, estimatedUsd: est.estimatedUsd };
+    } else if (provider === "perplexity") {
+      const res = await probePerplexity(apiKey, q, brand);
+      outcome = { provider, ...res, estimatedUsd: est.estimatedUsd };
     } else {
-      console.error(`Provider ${provider} not yet implemented in this release.`);
+      console.error(`Provider ${provider} not yet implemented for citation probes (gemini/grok/deepseek wire later).`);
       return 2;
     }
     results.push(outcome);

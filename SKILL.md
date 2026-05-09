@@ -32,7 +32,7 @@ Apex talks like a clear-eyed analyst, not a checker. Use this vocabulary verbati
 
 Single mode as of v0.2.0: local Cheerio audit. The CLI fetches the URL, parses HTML in-process, and runs the check suite locally. No backend, no account, no signup.
 
-**Citation slots:** 13 of the AEO checks need to actually call the AI engines (ChatGPT / Claude / Perplexity) to grade — that can't happen from HTML alone. Without BYOK keys, those 13 emit as `skipped` and the AEO score is honestly capped at /75 with the cap displayed. With BYOK keys configured (forward-compat — inline probes wire up in a follow-up release), the 13 flip to graded and AEO is /100.
+**Citation slots:** 13 of the AEO checks need to actually call the AI engines (ChatGPT / Claude / Perplexity) to grade — that can't happen from HTML alone. Without BYOK keys, those 13 emit as `skipped` and the AEO score is honestly capped at /75 with the cap displayed. Configure BYOK keys via `apex keys set openai|anthropic|perplexity <key>` and re-run `apex visibility <url>` — the CLI fans out to all configured providers in parallel, fills the citation slots from real probe responses, and renders the score against the /100 scale. With all three configured, all 13 slots grade and AEO is /100. With one or two configured, only the relevant per-engine slots flip; composite slots (multi-provider, ai-readiness-composite, etc.) stay skipped until ≥2 providers are present. Probes log to the local cost ledger.
 
 ## Slash commands
 

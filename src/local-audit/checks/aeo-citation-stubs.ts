@@ -51,6 +51,6 @@ export function citationCheckStubs(): AuditCheck[] {
     category: "AEO" as const,
     status: "skipped" as const,
     message:
-      "Live AI citation probe — requires BYOK (apex keys set openai|anthropic|perplexity).",
+      "Live AI citation probe — requires BYOK (apex keys set openai|anthropic|perplexity). Run `apex visibility <url>` with keys configured to fill this slot.",
   }));
 }

@@ -20,6 +20,7 @@ const BOOLEAN_FLAGS = new Set([
   "force",
   "verbose",
   "quiet",
+  "no-probes",
 ]);
 
 export function parseFlags(argv: string[]): ParsedFlags {

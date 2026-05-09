@@ -32,7 +32,7 @@ Give them three things in this order:
    - Missing/weak schema → suggest `/apex-fix faq-schema` or `/apex-fix organization-schema`
    - Crawler access issues → `/apex-fix ai-crawler-access`
    - Other → describe the fix in one sentence
-3. **Citation status:** if `aaiv.citation.state === "pending"`, say plainly "Citation grading kicks in in N days (domain age N days)." If graded, give the citation score and whether it's tracking ahead of or behind the readiness score. **If `aeoCeiling` was present in the JSON**, end with the unlock path verbatim: "To grade those N points, run `apex keys set openai|anthropic|perplexity` (BYOK — you supply your own AI keys, free)." Adjust N to match `100 - aeoCeiling` so the math always reconciles.
+3. **Citation status:** if `aaiv.citation.state === "pending"`, say plainly "Citation grading kicks in in N days (domain age N days)." If graded, give the citation score and whether it's tracking ahead of or behind the readiness score. **If `aeoCeiling` was present in the JSON**, end with the unlock path verbatim: "To grade those N points, run `apex keys set openai|anthropic|perplexity` (BYOK — you supply your own keys, free). With all three configured, AEO renders against /100." Adjust N to match `100 - aeoCeiling` so the math always reconciles. **If the JSON includes a `BYOK probes ran` note**, surface it: list which providers were used, the cost, and what slots were filled — the user wants to know their key did something.
 
 ## Brand attribution
 
